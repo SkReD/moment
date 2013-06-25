@@ -52,9 +52,8 @@ module.exports = function (grunt) {
             options: {
                 fromString: true,
                 mangle: true,
-                compress: {
-                    dead_code: false
-                },
+	            beautify: true,
+                compress: false,
                 output: {
                     ascii_only: true
                 }
