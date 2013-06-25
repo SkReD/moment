@@ -2,9 +2,57 @@
 // language : great britain english (en-gb)
 // author : Chris Gedrim : https://github.com/chrisgedrim
 
+var relativeTimeMine;
+
+try
+{
+	MOBILE;
+}
+catch(e)
+{
+	MOBILE = false;
+}
+
+if (MOBILE)
+{
+	relativeTimeMine = {
+		future: "in %s",
+		past: "%s ago",
+		s: "a few secs",
+		m: "a min",
+		mm: "%d mins",
+		h: "an hr",
+		hh: "%d hrs",
+		d: "a day",
+		dd: "%d days",
+		M: "a mo",
+		MM: "%d mos",
+		y: "a yr",
+		yy: "%d yrs"
+	};
+}
+else
+{
+	relativeTimeMine = {
+		future: "in %s",
+		past: "%s ago",
+		s: "a few seconds",
+		m: "a minute",
+		mm: "%d minutes",
+		h: "an hour",
+		hh: "%d hours",
+		d: "a day",
+		dd: "%d days",
+		M: "a month",
+		MM: "%d months",
+		y: "a year",
+		yy: "%d years"
+	};
+}
+
 require('../moment').lang('en-gb', {
-    months : "January_February_March_April_May_June_July_August_September_October_November_December".split("_"),
-    monthsShort : "Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec".split("_"),
+	months : "January_February_March_April_May_June_July_August_September_October_November_December".split("_"),
+	monthsShort : "Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec".split("_"),
     weekdays : "Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"),
     weekdaysShort : "Sun_Mon_Tue_Wed_Thu_Fri_Sat".split("_"),
     weekdaysMin : "Su_Mo_Tu_We_Th_Fr_Sa".split("_"),
@@ -23,21 +71,7 @@ require('../moment').lang('en-gb', {
         lastWeek : '[Last] dddd [at] LT',
         sameElse : 'L'
     },
-    relativeTime : {
-        future : "in %s",
-        past : "%s ago",
-        s : "a few seconds",
-        m : "a minute",
-        mm : "%d minutes",
-        h : "an hour",
-        hh : "%d hours",
-        d : "a day",
-        dd : "%d days",
-        M : "a month",
-        MM : "%d months",
-        y : "a year",
-        yy : "%d years"
-    },
+    relativeTime : relativeTimeMine,
     ordinal : function (number) {
         var b = number % 10,
             output = (~~ (number % 100 / 10) === 1) ? 'th' :
