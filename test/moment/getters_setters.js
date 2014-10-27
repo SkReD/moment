@@ -136,9 +136,9 @@ exports.getters_setters = {
         test.equal(moment(a).day(3).date(), 12, 'set from saturday to wednesday');
 
         a = moment([2011, 0, 9]);
-        test.equal(moment(a).day(0).date(), 9, 'set from sunday to sunday');
-        test.equal(moment(a).day(6).date(), 15, 'set from sunday to saturday');
-        test.equal(moment(a).day(3).date(), 12, 'set from sunday to wednesday');
+        test.equal(moment(a).day(0).date(), 2, 'set from sunday to sunday');
+        test.equal(moment(a).day(6).date(), 8, 'set from sunday to saturday');
+        test.equal(moment(a).day(3).date(), 5, 'set from sunday to wednesday');
 
         a = moment([2011, 0, 12]);
         test.equal(moment(a).day(0).date(), 9, 'set from wednesday to sunday');
