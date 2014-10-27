@@ -1267,7 +1267,7 @@
                         return this;
                     }
                 }
-                return this.add({ d : input - day });
+                return this.add({ d : input - (day === 0 ? 7 : day) });
             } else {
                 return day;
             }
@@ -1317,7 +1317,7 @@
 
             // weeks are a special case
             if (units === 'week') {
-                this.day(0);
+                this.day(this.lang()._week.dow);
             }
 
             return this;
@@ -1325,6 +1325,18 @@
 
         endOf: function (units) {
             return this.startOf(units).add(units, 1).subtract('ms', 1);
+        },
+
+        isStartOf: function (units)
+        {
+            units = typeof units !== 'undefined' ? units : 'millisecond';
+            return +this.clone().startOf(units) === +this;
+        },
+
+        isEndOf: function (units)
+        {
+            units = typeof units !== 'undefined' ? units : 'millisecond';
+            return +this.clone().endOf(units) === +this;
         },
 
         isAfter: function (input, units) {
@@ -1339,11 +1351,30 @@
 
         isSame: function (input, units) {
             units = typeof units !== 'undefined' ? units : 'millisecond';
-            return +this.clone().startOf(units) === +moment(input).startOf(units);
+            units = units.split(',');
+            for (var i = 0; i < units.length; i++)
+            {
+                if (+this.clone().startOf(units[i]) !== +moment(input).startOf(units[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         },
 
         zone : function () {
             return this._isUTC ? 0 : this._d.getTimezoneOffset();
+        },
+
+        subtractZone : function () {
+            this.subtract('minutes', this.zone());
+            return this;
+        },
+
+        addZone : function () {
+            this.add('minutes', this.zone());
+            return this;
         },
 
         daysInMonth : function () {

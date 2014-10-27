@@ -83,8 +83,8 @@ exports.end_start_of = {
         test.equal(+m, +ma, "Full or abbreviated should work");
         test.equal(m.year(), 2011, "keep the year");
         test.equal(m.month(), 0, "rolls back to January");
-        test.equal(m.day(), 0, "set day of week");
-        test.equal(m.date(), 30, "set correct date");
+        test.equal(m.day(), m.lang()._week.dow, "set day of week");
+        test.equal(m.date(), 31, "set correct date");
         test.equal(m.hours(), 0, "strip out the hours");
         test.equal(m.minutes(), 0, "strip out the minutes");
         test.equal(m.seconds(), 0, "strip out the seconds");
@@ -102,8 +102,8 @@ exports.end_start_of = {
         test.equal(+m, +ma, "Full or abbreviated should work");
         test.equal(m.year(), 2011, "keep the year");
         test.equal(m.month(), 1, "keep the month");
-        test.equal(m.day(), 6, "set the day of the week");
-        test.equal(m.date(), 5, "set the day");
+        test.equal(m.day(), m.add('week', 1).subtract('day', -1).weekday(), "set the day of the week");
+        test.equal(m.date(), 14, "set the day");
         test.equal(m.hours(), 23, "set the hours");
         test.equal(m.minutes(), 59, "set the minutes");
         test.equal(m.seconds(), 59, "set the seconds");
