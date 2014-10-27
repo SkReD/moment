@@ -52,7 +52,7 @@ module.exports = function (grunt) {
             options: {
                 fromString: true,
                 mangle: true,
-	            beautify: true,
+                beautify: true,
                 compress: false,
                 output: {
                     ascii_only: true

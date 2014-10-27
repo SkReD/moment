@@ -1350,11 +1350,30 @@
         },
 
         isSame: function (input, units) {
+            var unit;
+            var method;
+
             units = typeof units !== 'undefined' ? units : 'millisecond';
             units = units.split(',');
             for (var i = 0; i < units.length; i++)
             {
-                if (+this.clone().startOf(units[i]) !== +moment(input).startOf(units[i]))
+                unit = units[i];
+                switch (unit)
+                {
+                    case 'millisecond':
+                        method = 'valueOf';
+                        break;
+                    case 'day':
+                        method = 'date';
+                        break;
+                    case 'year':
+                    case 'month':
+                    default:
+                        method = unit;
+                        break;
+                }
+
+                if (this.clone()[method]() !== moment(input)[method]())
                 {
                     return false;
                 }
