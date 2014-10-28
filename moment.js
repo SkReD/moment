@@ -992,7 +992,15 @@
 
         if (moment.isMoment(input)) {
             config = extend({}, input);
-            config._d = new Date(+input._d);
+            if (input._d._rtzFix)
+            {
+                config._d = new Date(input._d._valueOf());
+                config._d._rtzFix = true;
+            }
+            else
+            {
+                config._d = new Date(input._d.valueOf());
+            }
         } else if (format) {
             if (isArray(format)) {
                 makeDateFromStringAndArray(config);
