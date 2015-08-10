@@ -1381,7 +1381,7 @@
                         break;
                 }
 
-                if (this.clone()[method]() !== moment(input)[method]())
+                if (this.clone()[method]() !== (this._isUTC ? moment.utc(input) : moment(input))[method]())
                 {
                     return false;
                 }
