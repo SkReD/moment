@@ -4,10 +4,23 @@ module.exports = function (grunt) {
     var Promise = require('es6-promise').Promise;
     var TMP_DIR = 'build/tmp';
 
-    function moveComments(code) {
-        var comments = [], rest = [];
-        code.split('\n').forEach(function (line) {
+    function moveComments(code, moveType) {
+        var comments = [], rest = [], skipId = -1;
+        code.split('\n').forEach(function (line, i) {
+            var isComment = false;
             if (line.trim().slice(0, 3) === '//!') {
+                isComment = true;
+            }
+            if (isComment && moveType === 'main-only') {
+                if (i === skipId + 1 ||
+                        line.trim() === '//! moment.js locale configuration') {
+                    skipId = i;
+                    // continue to next line
+                    return;
+                }
+            }
+
+            if (isComment) {
                 comments.push(line.trim());
             } else {
                 rest.push(line);
@@ -28,8 +41,9 @@ module.exports = function (grunt) {
     function transpile(opts) {
         // base, entry, skip, headerFile, skipLines, target
         var umdName = opts.headerFile ? 'not_used' : opts.umdName,
-            header = opts.headerFile ? getHeaderByFile(opts.headerFile) : '',
-            skipLines = opts.skipLines ? opts.skipLines : 0;
+            headerFile = opts.headerFile ? opts.headerFile : 'templates/default.js',
+            header = getHeaderByFile(headerFile),
+            skipLines = opts.skipLines ? opts.skipLines : 5;
 
         return esperanto.bundle({
             base: opts.base,
@@ -39,7 +53,7 @@ module.exports = function (grunt) {
             var umd = bundle.toUmd({name: umdName}),
                 fixed = header + umd.code.split('\n').slice(skipLines).join('\n');
             if (opts.moveComments) {
-                fixed = moveComments(fixed);
+                fixed = moveComments(fixed, opts.moveComments);
             }
             grunt.file.write(opts.target, fixed);
         });
@@ -105,7 +119,11 @@ module.exports = function (grunt) {
             code = files.map(function (file) {
                 var identifier = path.basename(file, '.js').replace('-', '_');
                 return 'import ' + identifier + ' from "./' + file + '";';
-            }).join('\n');
+            }).concat([
+                // Reset the language back to 'en', because every defineLocale
+                // also sets it.
+                'moment.locale(\'en\');'
+            ]).join('\n');
         return transpileCode({
             base: 'src',
             code: code,
@@ -131,7 +149,8 @@ module.exports = function (grunt) {
             base: 'src',
             code: code,
             umdName: 'moment',
-            target: target
+            target: target,
+            moveComments: 'main-only'
         }).then(function () {
             var code = grunt.file.read(target);
             var getDefaultRegExp = new RegExp('var ([a-z$_]+) =\\s+{[^]\\s+get default \\(\\) { return ([a-z$_]+); }[^]\\s+}', '');

@@ -27,6 +27,10 @@ test('setter / getter blackbox', function (assert) {
     assert.equal(m.clone().utcOffset(-90).utcOffset(), -90, 'utcOffset -90');
     assert.equal(m.clone().utcOffset('-01:30').utcOffset(), -90, 'utcOffset +01:30 is 90');
     assert.equal(m.clone().utcOffset('-0130').utcOffset(), -90, 'utcOffset +0130 is 90');
+    assert.equal(m.clone().utcOffset('+00:10').utcOffset(), 10, 'utcOffset +00:10 is 10');
+    assert.equal(m.clone().utcOffset('-00:10').utcOffset(), -10, 'utcOffset +00:10 is 10');
+    assert.equal(m.clone().utcOffset('+0010').utcOffset(), 10, 'utcOffset +0010 is 10');
+    assert.equal(m.clone().utcOffset('-0010').utcOffset(), -10, 'utcOffset +0010 is 10');
 });
 
 test('utcOffset shorthand hours -> minutes', function (assert) {
@@ -471,95 +475,4 @@ test('timezone format', function (assert) {
     assert.equal(moment().utcOffset(-60).format('ZZ'), '-0100', '+60 -> -0100');
     assert.equal(moment().utcOffset(-90).format('ZZ'), '-0130', '+90 -> -0130');
     assert.equal(moment().utcOffset(-120).format('ZZ'), '-0200', '+120 -> -0200');
-});
-
-test('local to utc, keepLocalTime = true', function (assert) {
-    var m = moment(),
-        fmt = 'YYYY-DD-MM HH:mm:ss';
-    assert.equal(m.clone().utc(true).format(fmt), m.format(fmt), 'local to utc failed to keep local time');
-});
-
-test('local to utc, keepLocalTime = false', function (assert) {
-    var m = moment();
-    assert.equal(m.clone().utc().valueOf(), m.valueOf(), 'local to utc failed to keep utc time (implicit)');
-    assert.equal(m.clone().utc(false).valueOf(), m.valueOf(), 'local to utc failed to keep utc time (explicit)');
-});
-
-test('local to zone, keepLocalTime = true', function (assert) {
-    var m = moment(),
-        fmt = 'YYYY-DD-MM HH:mm:ss',
-        z;
-
-    // Apparently there is -12:00 and +14:00
-    // http://en.wikipedia.org/wiki/UTC+14:00
-    // http://en.wikipedia.org/wiki/UTC-12:00
-    for (z = -12; z <= 14; ++z) {
-        assert.equal(m.clone().utcOffset(z * 60, true).format(fmt),
-                m.format(fmt),
-                'local to utcOffset(' + z + ':00) failed to keep local time');
-    }
-});
-
-test('local to zone, keepLocalTime = false', function (assert) {
-    var m = moment(),
-        z;
-
-    // Apparently there is -12:00 and +14:00
-    // http://en.wikipedia.org/wiki/UTC+14:00
-    // http://en.wikipedia.org/wiki/UTC-12:00
-    for (z = -12; z <= 14; ++z) {
-        assert.equal(m.clone().utcOffset(z * 60).valueOf(),
-                m.valueOf(),
-                'local to utcOffset(' + z + ':00) failed to keep utc time (implicit)');
-        assert.equal(m.clone().utcOffset(z * 60, false).valueOf(),
-                m.valueOf(),
-                'local to utcOffset(' + z + ':00) failed to keep utc time (explicit)');
-    }
-});
-
-test('utc to local, keepLocalTime = true', function (assert) {
-    var um = moment.utc(),
-        fmt = 'YYYY-DD-MM HH:mm:ss';
-
-    assert.equal(um.clone().local(true).format(fmt), um.format(fmt), 'utc to local failed to keep local time');
-});
-
-test('utc to local, keepLocalTime = false', function (assert) {
-    var um = moment.utc();
-    assert.equal(um.clone().local().valueOf(), um.valueOf(), 'utc to local failed to keep utc time (implicit)');
-    assert.equal(um.clone().local(false).valueOf(), um.valueOf(), 'utc to local failed to keep utc time (explicit)');
-});
-
-test('zone to local, keepLocalTime = true', function (assert) {
-    var m = moment(),
-        fmt = 'YYYY-DD-MM HH:mm:ss',
-        z;
-
-    // Apparently there is -12:00 and +14:00
-    // http://en.wikipedia.org/wiki/UTC+14:00
-    // http://en.wikipedia.org/wiki/UTC-12:00
-    for (z = -12; z <= 14; ++z) {
-        m.utcOffset(z * 60);
-
-        assert.equal(m.clone().local(true).format(fmt),
-                m.format(fmt),
-                'utcOffset(' + z + ':00) to local failed to keep local time');
-    }
-});
-
-test('zone to local, keepLocalTime = false', function (assert) {
-    var m = moment(),
-        z;
-
-    // Apparently there is -12:00 and +14:00
-    // http://en.wikipedia.org/wiki/UTC+14:00
-    // http://en.wikipedia.org/wiki/UTC-12:00
-    for (z = -12; z <= 14; ++z) {
-        m.utcOffset(z * 60);
-
-        assert.equal(m.clone().local(false).valueOf(), m.valueOf(),
-                'utcOffset(' + z + ':00) to local failed to keep utc time (explicit)');
-        assert.equal(m.clone().local().valueOf(), m.valueOf(),
-                'utcOffset(' + z + ':00) to local failed to keep utc time (implicit)');
-    }
 });

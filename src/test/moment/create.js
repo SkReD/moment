@@ -14,6 +14,11 @@ test('array', function (assert) {
     assert.equal(+moment(new Date(2010, 1, 14, 15, 25, 50, 125)), +moment([2010, 1, 14, 15, 25, 50, 125]), 'constructing with array === constructing with new Date()');
 });
 
+test('array with invalid arguments', function (assert) {
+    assert.ok(!moment([2010, null, null]).isValid(), '[2010, null, null]');
+    assert.ok(!moment([1945, null, null]).isValid(), '[1945, null, null] (pre-1970)');
+});
+
 test('array copying', function (assert) {
     var importantArray = [2009, 11];
     moment(importantArray);
@@ -67,6 +72,7 @@ test('unix', function (assert) {
 
 test('date', function (assert) {
     assert.ok(moment(new Date()).toDate() instanceof Date, 'new Date()');
+    assert.equal(moment(new Date(2016,0,1), 'YYYY-MM-DD').format('YYYY-MM-DD'), '2016-01-01', 'If date is provided, format string is ignored');
 });
 
 test('date mutation', function (assert) {
@@ -423,6 +429,10 @@ test('parsing iso', function (assert) {
         '-' + pad(-hourOffset) + ':' + pad(-minOffset),
     tz2 = tz.replace(':', ''),
     tz3 = tz2.slice(0, 3),
+    //Tz3 removes minutes digit so will break the tests when parsed if they all use the same minutes digit
+    minutesForTz3 = pad((4 + minOffset) % 60),
+    minute = pad(4 + minOffset),
+
     formats = [
         ['2011-10-08',                    '2011-10-08T00:00:00.000' + tz],
         ['2011-10-08T18',                 '2011-10-08T18:00:00.000' + tz],
@@ -432,8 +442,8 @@ test('parsing iso', function (assert) {
         ['2011-10-08T18:04:20' + tz,      '2011-10-08T18:04:20.000' + tz],
         ['2011-10-08T18:04' + tz2,        '2011-10-08T18:04:00.000' + tz],
         ['2011-10-08T18:04:20' + tz2,     '2011-10-08T18:04:20.000' + tz],
-        ['2011-10-08T18:04' + tz3,        '2011-10-08T18:04:00.000' + tz],
-        ['2011-10-08T18:04:20' + tz3,     '2011-10-08T18:04:20.000' + tz],
+        ['2011-10-08T18:04' + tz3,        '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011-10-08T18:04:20' + tz3,     '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
         ['2011-10-08T18:04:20.1' + tz2,   '2011-10-08T18:04:20.100' + tz],
         ['2011-10-08T18:04:20.11' + tz2,  '2011-10-08T18:04:20.110' + tz],
         ['2011-10-08T18:04:20.111' + tz2, '2011-10-08T18:04:20.111' + tz],
@@ -444,8 +454,8 @@ test('parsing iso', function (assert) {
         ['2011-10-08 18:04:20' + tz,      '2011-10-08T18:04:20.000' + tz],
         ['2011-10-08 18:04' + tz2,        '2011-10-08T18:04:00.000' + tz],
         ['2011-10-08 18:04:20' + tz2,     '2011-10-08T18:04:20.000' + tz],
-        ['2011-10-08 18:04' + tz3,        '2011-10-08T18:04:00.000' + tz],
-        ['2011-10-08 18:04:20' + tz3,     '2011-10-08T18:04:20.000' + tz],
+        ['2011-10-08 18:04' + tz3,        '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011-10-08 18:04:20' + tz3,     '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
         ['2011-10-08 18:04:20.1' + tz2,   '2011-10-08T18:04:20.100' + tz],
         ['2011-10-08 18:04:20.11' + tz2,  '2011-10-08T18:04:20.110' + tz],
         ['2011-10-08 18:04:20.111' + tz2, '2011-10-08T18:04:20.111' + tz],
@@ -458,8 +468,8 @@ test('parsing iso', function (assert) {
         ['2011-W40-6T18:04:20' + tz,      '2011-10-08T18:04:20.000' + tz],
         ['2011-W40-6T18:04' + tz2,        '2011-10-08T18:04:00.000' + tz],
         ['2011-W40-6T18:04:20' + tz2,     '2011-10-08T18:04:20.000' + tz],
-        ['2011-W40-6T18:04' + tz3,        '2011-10-08T18:04:00.000' + tz],
-        ['2011-W40-6T18:04:20' + tz3,     '2011-10-08T18:04:20.000' + tz],
+        ['2011-W40-6T18:04' + tz3,        '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011-W40-6T18:04:20' + tz3,     '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
         ['2011-W40-6T18:04:20.1' + tz2,   '2011-10-08T18:04:20.100' + tz],
         ['2011-W40-6T18:04:20.11' + tz2,  '2011-10-08T18:04:20.110' + tz],
         ['2011-W40-6T18:04:20.111' + tz2, '2011-10-08T18:04:20.111' + tz],
@@ -470,8 +480,8 @@ test('parsing iso', function (assert) {
         ['2011-W40-6 18:04:20' + tz,      '2011-10-08T18:04:20.000' + tz],
         ['2011-W40-6 18:04' + tz2,        '2011-10-08T18:04:00.000' + tz],
         ['2011-W40-6 18:04:20' + tz2,     '2011-10-08T18:04:20.000' + tz],
-        ['2011-W40-6 18:04' + tz3,        '2011-10-08T18:04:00.000' + tz],
-        ['2011-W40-6 18:04:20' + tz3,     '2011-10-08T18:04:20.000' + tz],
+        ['2011-W40-6 18:04' + tz3,        '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011-W40-6 18:04:20' + tz3,     '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
         ['2011-W40-6 18:04:20.1' + tz2,   '2011-10-08T18:04:20.100' + tz],
         ['2011-W40-6 18:04:20.11' + tz2,  '2011-10-08T18:04:20.110' + tz],
         ['2011-W40-6 18:04:20.111' + tz2, '2011-10-08T18:04:20.111' + tz],
@@ -483,8 +493,8 @@ test('parsing iso', function (assert) {
         ['2011-281T18:04:20' + tz,        '2011-10-08T18:04:20.000' + tz],
         ['2011-281T18:04' + tz2,          '2011-10-08T18:04:00.000' + tz],
         ['2011-281T18:04:20' + tz2,       '2011-10-08T18:04:20.000' + tz],
-        ['2011-281T18:04' + tz3,          '2011-10-08T18:04:00.000' + tz],
-        ['2011-281T18:04:20' + tz3,       '2011-10-08T18:04:20.000' + tz],
+        ['2011-281T18:04' + tz3,          '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011-281T18:04:20' + tz3,       '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
         ['2011-281T18:04:20.1' + tz2,     '2011-10-08T18:04:20.100' + tz],
         ['2011-281T18:04:20.11' + tz2,    '2011-10-08T18:04:20.110' + tz],
         ['2011-281T18:04:20.111' + tz2,   '2011-10-08T18:04:20.111' + tz],
@@ -495,37 +505,126 @@ test('parsing iso', function (assert) {
         ['2011-281 18:04:20' + tz,        '2011-10-08T18:04:20.000' + tz],
         ['2011-281 18:04' + tz2,          '2011-10-08T18:04:00.000' + tz],
         ['2011-281 18:04:20' + tz2,       '2011-10-08T18:04:20.000' + tz],
-        ['2011-281 18:04' + tz3,          '2011-10-08T18:04:00.000' + tz],
-        ['2011-281 18:04:20' + tz3,       '2011-10-08T18:04:20.000' + tz],
+        ['2011-281 18:04' + tz3,          '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011-281 18:04:20' + tz3,       '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
         ['2011-281 18:04:20.1' + tz2,     '2011-10-08T18:04:20.100' + tz],
         ['2011-281 18:04:20.11' + tz2,    '2011-10-08T18:04:20.110' + tz],
-        ['2011-281 18:04:20.111' + tz2,   '2011-10-08T18:04:20.111' + tz]
+        ['2011-281 18:04:20.111' + tz2,   '2011-10-08T18:04:20.111' + tz],
+        ['20111008T18',                   '2011-10-08T18:00:00.000' + tz],
+        ['20111008T1804',                 '2011-10-08T18:04:00.000' + tz],
+        ['20111008T180420',               '2011-10-08T18:04:20.000' + tz],
+        ['20111008T1804' + tz,            '2011-10-08T18:04:00.000' + tz],
+        ['20111008T180420' + tz,          '2011-10-08T18:04:20.000' + tz],
+        ['20111008T1804' + tz2,           '2011-10-08T18:04:00.000' + tz],
+        ['20111008T180420' + tz2,         '2011-10-08T18:04:20.000' + tz],
+        ['20111008T1804' + tz3,           '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['20111008T180420' + tz3,         '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
+        ['20111008T180420,1' + tz2,       '2011-10-08T18:04:20.100' + tz],
+        ['20111008T180420,11' + tz2,      '2011-10-08T18:04:20.110' + tz],
+        ['20111008T180420,111' + tz2,     '2011-10-08T18:04:20.111' + tz],
+        ['20111008 18',                   '2011-10-08T18:00:00.000' + tz],
+        ['20111008 1804',                 '2011-10-08T18:04:00.000' + tz],
+        ['20111008 180420',               '2011-10-08T18:04:20.000' + tz],
+        ['20111008 1804' + tz,            '2011-10-08T18:04:00.000' + tz],
+        ['20111008 180420' + tz,          '2011-10-08T18:04:20.000' + tz],
+        ['20111008 1804' + tz2,           '2011-10-08T18:04:00.000' + tz],
+        ['20111008 180420' + tz2,         '2011-10-08T18:04:20.000' + tz],
+        ['20111008 1804' + tz3,           '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['20111008 180420' + tz3,         '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
+        ['20111008 180420,1' + tz2,       '2011-10-08T18:04:20.100' + tz],
+        ['20111008 180420,11' + tz2,      '2011-10-08T18:04:20.110' + tz],
+        ['20111008 180420,111' + tz2,     '2011-10-08T18:04:20.111' + tz],
+        ['2011W40',                       '2011-10-03T00:00:00.000' + tz],
+        ['2011W406',                      '2011-10-08T00:00:00.000' + tz],
+        ['2011W406T18',                   '2011-10-08T18:00:00.000' + tz],
+        ['2011W406T1804',                 '2011-10-08T18:04:00.000' + tz],
+        ['2011W406T180420',               '2011-10-08T18:04:20.000' + tz],
+        ['2011W406 1804' + tz2,           '2011-10-08T18:04:00.000' + tz],
+        ['2011W406T1804' + tz,            '2011-10-08T18:04:00.000' + tz],
+        ['2011W406T180420' + tz,          '2011-10-08T18:04:20.000' + tz],
+        ['2011W406T1804' + tz2,           '2011-10-08T18:04:00.000' + tz],
+        ['2011W406T180420' + tz2,         '2011-10-08T18:04:20.000' + tz],
+        ['2011W406T1804' + tz3,           '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011W406T180420' + tz3,         '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
+        ['2011W406T180420,1' + tz2,       '2011-10-08T18:04:20.100' + tz],
+        ['2011W406T180420,11' + tz2,      '2011-10-08T18:04:20.110' + tz],
+        ['2011W406T180420,111' + tz2,     '2011-10-08T18:04:20.111' + tz],
+        ['2011W406 18',                   '2011-10-08T18:00:00.000' + tz],
+        ['2011W406 1804',                 '2011-10-08T18:04:00.000' + tz],
+        ['2011W406 180420',               '2011-10-08T18:04:20.000' + tz],
+        ['2011W406 1804' + tz,            '2011-10-08T18:04:00.000' + tz],
+        ['2011W406 180420' + tz,          '2011-10-08T18:04:20.000' + tz],
+        ['2011W406 180420' + tz2,         '2011-10-08T18:04:20.000' + tz],
+        ['2011W406 1804' + tz3,           '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011W406 180420' + tz3,         '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
+        ['2011W406 180420,1' + tz2,       '2011-10-08T18:04:20.100' + tz],
+        ['2011W406 180420,11' + tz2,      '2011-10-08T18:04:20.110' + tz],
+        ['2011W406 180420,111' + tz2,     '2011-10-08T18:04:20.111' + tz],
+        ['2011281',                       '2011-10-08T00:00:00.000' + tz],
+        ['2011281T18',                    '2011-10-08T18:00:00.000' + tz],
+        ['2011281T1804',                  '2011-10-08T18:04:00.000' + tz],
+        ['2011281T180420',                '2011-10-08T18:04:20.000' + tz],
+        ['2011281T1804' + tz,             '2011-10-08T18:04:00.000' + tz],
+        ['2011281T180420' + tz,           '2011-10-08T18:04:20.000' + tz],
+        ['2011281T1804' + tz2,            '2011-10-08T18:04:00.000' + tz],
+        ['2011281T180420' + tz2,          '2011-10-08T18:04:20.000' + tz],
+        ['2011281T1804' + tz3,            '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011281T180420' + tz3,          '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
+        ['2011281T180420,1' + tz2,        '2011-10-08T18:04:20.100' + tz],
+        ['2011281T180420,11' + tz2,       '2011-10-08T18:04:20.110' + tz],
+        ['2011281T180420,111' + tz2,      '2011-10-08T18:04:20.111' + tz],
+        ['2011281 18',                    '2011-10-08T18:00:00.000' + tz],
+        ['2011281 1804',                  '2011-10-08T18:04:00.000' + tz],
+        ['2011281 180420',                '2011-10-08T18:04:20.000' + tz],
+        ['2011281 1804' + tz,             '2011-10-08T18:04:00.000' + tz],
+        ['2011281 180420' + tz,           '2011-10-08T18:04:20.000' + tz],
+        ['2011281 1804' + tz2,            '2011-10-08T18:04:00.000' + tz],
+        ['2011281 180420' + tz2,          '2011-10-08T18:04:20.000' + tz],
+        ['2011281 1804' + tz3,            '2011-10-08T18:' + minutesForTz3 + ':00.000' + tz],
+        ['2011281 180420' + tz3,          '2011-10-08T18:' + minutesForTz3 + ':20.000' + tz],
+        ['2011281 180420,1' + tz2,        '2011-10-08T18:04:20.100' + tz],
+        ['2011281 180420,11' + tz2,       '2011-10-08T18:04:20.110' + tz],
+        ['2011281 180420,111' + tz2,      '2011-10-08T18:04:20.111' + tz]
     ], i;
     for (i = 0; i < formats.length; i++) {
-        assert.equal(moment(formats[i][0]).format('YYYY-MM-DDTHH:mm:ss.SSSZ'), formats[i][1], 'moment should be able to parse ISO ' + formats[i][0]);
+        assert.equal(moment(formats[i][0]).format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+                formats[i][1], 'moment should be able to parse ISO ' + formats[i][0]);
+        assert.equal(moment(formats[i][0], moment.ISO_8601).format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+                formats[i][1], 'moment should be able to parse specified ISO ' + formats[i][0]);
+        assert.equal(moment(formats[i][0], moment.ISO_8601, true).format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+                formats[i][1], 'moment should be able to parse specified strict ISO ' + formats[i][0]);
     }
 });
 
+test('non iso 8601 strings', function (assert) {
+    assert.ok(!moment('2015-10T10:15', moment.ISO_8601, true).isValid(), 'incomplete date with time');
+    assert.ok(!moment('2015-W10T10:15', moment.ISO_8601, true).isValid(), 'incomplete week date with time');
+    assert.ok(!moment('201510', moment.ISO_8601, true).isValid(), 'basic YYYYMM is not allowed');
+    assert.ok(!moment('2015W10T1015', moment.ISO_8601, true).isValid(), 'incomplete week date with time (basic)');
+    assert.ok(!moment('2015-10-08T1015', moment.ISO_8601, true).isValid(), 'mixing extended and basic format');
+    assert.ok(!moment('20151008T10:15', moment.ISO_8601, true).isValid(), 'mixing basic and extended format');
+});
+
 test('parsing iso week year/week/weekday', function (assert) {
-    assert.equal(moment.utc('2007-W01').format(), '2007-01-01T00:00:00+00:00', '2008 week 1 (1st Jan Mon)');
-    assert.equal(moment.utc('2008-W01').format(), '2007-12-31T00:00:00+00:00', '2008 week 1 (1st Jan Tue)');
-    assert.equal(moment.utc('2003-W01').format(), '2002-12-30T00:00:00+00:00', '2008 week 1 (1st Jan Wed)');
-    assert.equal(moment.utc('2009-W01').format(), '2008-12-29T00:00:00+00:00', '2009 week 1 (1st Jan Thu)');
-    assert.equal(moment.utc('2010-W01').format(), '2010-01-04T00:00:00+00:00', '2010 week 1 (1st Jan Fri)');
-    assert.equal(moment.utc('2011-W01').format(), '2011-01-03T00:00:00+00:00', '2011 week 1 (1st Jan Sat)');
-    assert.equal(moment.utc('2012-W01').format(), '2012-01-02T00:00:00+00:00', '2012 week 1 (1st Jan Sun)');
+    assert.equal(moment.utc('2007-W01').format(), '2007-01-01T00:00:00Z', '2008 week 1 (1st Jan Mon)');
+    assert.equal(moment.utc('2008-W01').format(), '2007-12-31T00:00:00Z', '2008 week 1 (1st Jan Tue)');
+    assert.equal(moment.utc('2003-W01').format(), '2002-12-30T00:00:00Z', '2008 week 1 (1st Jan Wed)');
+    assert.equal(moment.utc('2009-W01').format(), '2008-12-29T00:00:00Z', '2009 week 1 (1st Jan Thu)');
+    assert.equal(moment.utc('2010-W01').format(), '2010-01-04T00:00:00Z', '2010 week 1 (1st Jan Fri)');
+    assert.equal(moment.utc('2011-W01').format(), '2011-01-03T00:00:00Z', '2011 week 1 (1st Jan Sat)');
+    assert.equal(moment.utc('2012-W01').format(), '2012-01-02T00:00:00Z', '2012 week 1 (1st Jan Sun)');
 });
 
 test('parsing week year/week/weekday (dow 1, doy 4)', function (assert) {
     moment.locale('dow:1,doy:4', {week: {dow: 1, doy: 4}});
 
-    assert.equal(moment.utc('2007-01', 'gggg-ww').format(), '2007-01-01T00:00:00+00:00', '2007 week 1 (1st Jan Mon)');
-    assert.equal(moment.utc('2008-01', 'gggg-ww').format(), '2007-12-31T00:00:00+00:00', '2008 week 1 (1st Jan Tue)');
-    assert.equal(moment.utc('2003-01', 'gggg-ww').format(), '2002-12-30T00:00:00+00:00', '2003 week 1 (1st Jan Wed)');
-    assert.equal(moment.utc('2009-01', 'gggg-ww').format(), '2008-12-29T00:00:00+00:00', '2009 week 1 (1st Jan Thu)');
-    assert.equal(moment.utc('2010-01', 'gggg-ww').format(), '2010-01-04T00:00:00+00:00', '2010 week 1 (1st Jan Fri)');
-    assert.equal(moment.utc('2011-01', 'gggg-ww').format(), '2011-01-03T00:00:00+00:00', '2011 week 1 (1st Jan Sat)');
-    assert.equal(moment.utc('2012-01', 'gggg-ww').format(), '2012-01-02T00:00:00+00:00', '2012 week 1 (1st Jan Sun)');
+    assert.equal(moment.utc('2007-01', 'gggg-ww').format(), '2007-01-01T00:00:00Z', '2007 week 1 (1st Jan Mon)');
+    assert.equal(moment.utc('2008-01', 'gggg-ww').format(), '2007-12-31T00:00:00Z', '2008 week 1 (1st Jan Tue)');
+    assert.equal(moment.utc('2003-01', 'gggg-ww').format(), '2002-12-30T00:00:00Z', '2003 week 1 (1st Jan Wed)');
+    assert.equal(moment.utc('2009-01', 'gggg-ww').format(), '2008-12-29T00:00:00Z', '2009 week 1 (1st Jan Thu)');
+    assert.equal(moment.utc('2010-01', 'gggg-ww').format(), '2010-01-04T00:00:00Z', '2010 week 1 (1st Jan Fri)');
+    assert.equal(moment.utc('2011-01', 'gggg-ww').format(), '2011-01-03T00:00:00Z', '2011 week 1 (1st Jan Sat)');
+    assert.equal(moment.utc('2012-01', 'gggg-ww').format(), '2012-01-02T00:00:00Z', '2012 week 1 (1st Jan Sun)');
 
     moment.defineLocale('dow:1,doy:4', null);
 });
@@ -533,39 +632,40 @@ test('parsing week year/week/weekday (dow 1, doy 4)', function (assert) {
 test('parsing week year/week/weekday (dow 1, doy 7)', function (assert) {
     moment.locale('dow:1,doy:7', {week: {dow: 1, doy: 7}});
 
-    assert.equal(moment.utc('2007-01', 'gggg-ww').format(), '2007-01-01T00:00:00+00:00', '2007 week 1 (1st Jan Mon)');
-    assert.equal(moment.utc('2008-01', 'gggg-ww').format(), '2007-12-31T00:00:00+00:00', '2008 week 1 (1st Jan Tue)');
-    assert.equal(moment.utc('2003-01', 'gggg-ww').format(), '2002-12-30T00:00:00+00:00', '2003 week 1 (1st Jan Wed)');
-    assert.equal(moment.utc('2009-01', 'gggg-ww').format(), '2008-12-29T00:00:00+00:00', '2009 week 1 (1st Jan Thu)');
-    assert.equal(moment.utc('2010-01', 'gggg-ww').format(), '2009-12-28T00:00:00+00:00', '2010 week 1 (1st Jan Fri)');
-    assert.equal(moment.utc('2011-01', 'gggg-ww').format(), '2010-12-27T00:00:00+00:00', '2011 week 1 (1st Jan Sat)');
-    assert.equal(moment.utc('2012-01', 'gggg-ww').format(), '2011-12-26T00:00:00+00:00', '2012 week 1 (1st Jan Sun)');
+    assert.equal(moment.utc('2007-01', 'gggg-ww').format(), '2007-01-01T00:00:00Z', '2007 week 1 (1st Jan Mon)');
+    assert.equal(moment.utc('2008-01', 'gggg-ww').format(), '2007-12-31T00:00:00Z', '2008 week 1 (1st Jan Tue)');
+    assert.equal(moment.utc('2003-01', 'gggg-ww').format(), '2002-12-30T00:00:00Z', '2003 week 1 (1st Jan Wed)');
+    assert.equal(moment.utc('2009-01', 'gggg-ww').format(), '2008-12-29T00:00:00Z', '2009 week 1 (1st Jan Thu)');
+    assert.equal(moment.utc('2010-01', 'gggg-ww').format(), '2009-12-28T00:00:00Z', '2010 week 1 (1st Jan Fri)');
+    assert.equal(moment.utc('2011-01', 'gggg-ww').format(), '2010-12-27T00:00:00Z', '2011 week 1 (1st Jan Sat)');
+    assert.equal(moment.utc('2012-01', 'gggg-ww').format(), '2011-12-26T00:00:00Z', '2012 week 1 (1st Jan Sun)');
     moment.defineLocale('dow:1,doy:7', null);
 });
 
 test('parsing week year/week/weekday (dow 0, doy 6)', function (assert) {
     moment.locale('dow:0,doy:6', {week: {dow: 0, doy: 6}});
 
-    assert.equal(moment.utc('2007-01', 'gggg-ww').format(), '2006-12-31T00:00:00+00:00', '2007 week 1 (1st Jan Mon)');
-    assert.equal(moment.utc('2008-01', 'gggg-ww').format(), '2007-12-30T00:00:00+00:00', '2008 week 1 (1st Jan Tue)');
-    assert.equal(moment.utc('2003-01', 'gggg-ww').format(), '2002-12-29T00:00:00+00:00', '2003 week 1 (1st Jan Wed)');
-    assert.equal(moment.utc('2009-01', 'gggg-ww').format(), '2008-12-28T00:00:00+00:00', '2009 week 1 (1st Jan Thu)');
-    assert.equal(moment.utc('2010-01', 'gggg-ww').format(), '2009-12-27T00:00:00+00:00', '2010 week 1 (1st Jan Fri)');
-    assert.equal(moment.utc('2011-01', 'gggg-ww').format(), '2010-12-26T00:00:00+00:00', '2011 week 1 (1st Jan Sat)');
-    assert.equal(moment.utc('2012-01', 'gggg-ww').format(), '2012-01-01T00:00:00+00:00', '2012 week 1 (1st Jan Sun)');
+    assert.equal(moment.utc('2007-01', 'gggg-ww').format(), '2006-12-31T00:00:00Z', '2007 week 1 (1st Jan Mon)');
+    assert.equal(moment.utc('2008-01', 'gggg-ww').format(), '2007-12-30T00:00:00Z', '2008 week 1 (1st Jan Tue)');
+    assert.equal(moment.utc('2003-01', 'gggg-ww').format(), '2002-12-29T00:00:00Z', '2003 week 1 (1st Jan Wed)');
+    assert.equal(moment.utc('2009-01', 'gggg-ww').format(), '2008-12-28T00:00:00Z', '2009 week 1 (1st Jan Thu)');
+    assert.equal(moment.utc('2010-01', 'gggg-ww').format(), '2009-12-27T00:00:00Z', '2010 week 1 (1st Jan Fri)');
+    assert.equal(moment.utc('2011-01', 'gggg-ww').format(), '2010-12-26T00:00:00Z', '2011 week 1 (1st Jan Sat)');
+    assert.equal(moment.utc('2012-01', 'gggg-ww').format(), '2012-01-01T00:00:00Z', '2012 week 1 (1st Jan Sun)');
     moment.defineLocale('dow:0,doy:6', null);
 });
 
 test('parsing week year/week/weekday (dow 6, doy 12)', function (assert) {
     moment.locale('dow:6,doy:12', {week: {dow: 6, doy: 12}});
 
-    assert.equal(moment.utc('2007-01', 'gggg-ww').format(), '2006-12-30T00:00:00+00:00', '2007 week 1 (1st Jan Mon)');
-    assert.equal(moment.utc('2008-01', 'gggg-ww').format(), '2007-12-29T00:00:00+00:00', '2008 week 1 (1st Jan Tue)');
-    assert.equal(moment.utc('2003-01', 'gggg-ww').format(), '2002-12-28T00:00:00+00:00', '2003 week 1 (1st Jan Wed)');
-    assert.equal(moment.utc('2009-01', 'gggg-ww').format(), '2008-12-27T00:00:00+00:00', '2009 week 1 (1st Jan Thu)');
-    assert.equal(moment.utc('2010-01', 'gggg-ww').format(), '2009-12-26T00:00:00+00:00', '2010 week 1 (1st Jan Fri)');
-    assert.equal(moment.utc('2011-01', 'gggg-ww').format(), '2011-01-01T00:00:00+00:00', '2011 week 1 (1st Jan Sat)');
-    assert.equal(moment.utc('2012-01', 'gggg-ww').format(), '2011-12-31T00:00:00+00:00', '2012 week 1 (1st Jan Sun)');
+    assert.equal(moment.utc('2007-01', 'gggg-ww').format(), '2006-12-30T00:00:00Z', '2007 week 1 (1st Jan Mon)');
+    assert.equal(moment.utc('2008-01', 'gggg-ww').format(), '2007-12-29T00:00:00Z', '2008 week 1 (1st Jan Tue)');
+    assert.equal(moment.utc('2003-01', 'gggg-ww').format(), '2002-12-28T00:00:00Z', '2003 week 1 (1st Jan Wed)');
+    assert.equal(moment.utc('2009-01', 'gggg-ww').format(), '2008-12-27T00:00:00Z', '2009 week 1 (1st Jan Thu)');
+    assert.equal(moment.utc('2010-01', 'gggg-ww').format(), '2009-12-26T00:00:00Z', '2010 week 1 (1st Jan Fri)');
+    assert.equal(moment.utc('2011-01', 'gggg-ww').format(), '2011-01-01T00:00:00Z', '2011 week 1 (1st Jan Sat)');
+    assert.equal(moment.utc('2012-01', 'gggg-ww').format(), '2011-12-31T00:00:00Z', '2012 week 1 (1st Jan Sun)');
+    moment.defineLocale('dow:6,doy:12', null);
 });
 
 test('parsing ISO with Z', function (assert) {
@@ -630,7 +730,7 @@ test('parsing iso Z timezone into local', function (assert) {
 });
 
 test('parsing iso with more subsecond precision digits', function (assert) {
-    assert.equal(moment.utc('2013-07-31T22:00:00.0000000Z').format(), '2013-07-31T22:00:00+00:00', 'more than 3 subsecond digits');
+    assert.equal(moment.utc('2013-07-31T22:00:00.0000000Z').format(), '2013-07-31T22:00:00Z', 'more than 3 subsecond digits');
 });
 
 test('null or empty', function (assert) {
@@ -854,6 +954,7 @@ test('parsing localized weekdays', function (assert) {
         ver('1999 37 Di', 'gggg ww dd', '1999 09 19', 'localized d uses 0-indexed days: 0 = sund');
     }
     finally {
+        moment.defineLocale('dow:1,doy:4', null);
         moment.locale('en');
     }
 });
@@ -880,8 +981,12 @@ test('array with strings', function (assert) {
     assert.equal(moment(['2014', '7', '31']).isValid(), true, 'string array + isValid');
 });
 
+test('object with strings', function (assert) {
+    assert.equal(moment({year: '2014', month: '7', day: '31'}).isValid(), true, 'string object + isValid');
+});
+
 test('utc with array of formats', function (assert) {
-    assert.equal(moment.utc('2014-01-01', ['YYYY-MM-DD', 'YYYY-MM']).format(), '2014-01-01T00:00:00+00:00', 'moment.utc works with array of formats');
+    assert.equal(moment.utc('2014-01-01', ['YYYY-MM-DD', 'YYYY-MM']).format(), '2014-01-01T00:00:00Z', 'moment.utc works with array of formats');
 });
 
 test('parsing invalid string weekdays', function (assert) {
@@ -909,4 +1014,49 @@ test('milliseconds', function (assert) {
     assert.equal(moment('1234567', 'SSSSSSS').millisecond(), 123);
     assert.equal(moment('12345678', 'SSSSSSSS').millisecond(), 123);
     assert.equal(moment('123456789', 'SSSSSSSSS').millisecond(), 123);
+});
+
+test('hmm', function (assert) {
+    assert.equal(moment('123', 'hmm', true).format('HH:mm:ss'), '01:23:00', '123 with hmm');
+    assert.equal(moment('123a', 'hmmA', true).format('HH:mm:ss'), '01:23:00', '123a with hmmA');
+    assert.equal(moment('123p', 'hmmA', true).format('HH:mm:ss'), '13:23:00', '123p with hmmA');
+
+    assert.equal(moment('1234', 'hmm', true).format('HH:mm:ss'), '12:34:00', '1234 with hmm');
+    assert.equal(moment('1234a', 'hmmA', true).format('HH:mm:ss'), '00:34:00', '1234a with hmmA');
+    assert.equal(moment('1234p', 'hmmA', true).format('HH:mm:ss'), '12:34:00', '1234p with hmmA');
+
+    assert.equal(moment('12345', 'hmmss', true).format('HH:mm:ss'), '01:23:45', '12345 with hmmss');
+    assert.equal(moment('12345a', 'hmmssA', true).format('HH:mm:ss'), '01:23:45', '12345a with hmmssA');
+    assert.equal(moment('12345p', 'hmmssA', true).format('HH:mm:ss'), '13:23:45', '12345p with hmmssA');
+    assert.equal(moment('112345', 'hmmss', true).format('HH:mm:ss'), '11:23:45', '112345 with hmmss');
+    assert.equal(moment('112345a', 'hmmssA', true).format('HH:mm:ss'), '11:23:45', '112345a with hmmssA');
+    assert.equal(moment('112345p', 'hmmssA', true).format('HH:mm:ss'), '23:23:45', '112345p with hmmssA');
+
+    assert.equal(moment('023', 'Hmm', true).format('HH:mm:ss'), '00:23:00', '023 with Hmm');
+    assert.equal(moment('123', 'Hmm', true).format('HH:mm:ss'), '01:23:00', '123 with Hmm');
+    assert.equal(moment('1234', 'Hmm', true).format('HH:mm:ss'), '12:34:00', '1234 with Hmm');
+    assert.equal(moment('1534', 'Hmm', true).format('HH:mm:ss'), '15:34:00', '1234 with Hmm');
+    assert.equal(moment('12345', 'Hmmss', true).format('HH:mm:ss'), '01:23:45', '12345 with Hmmss');
+    assert.equal(moment('112345', 'Hmmss', true).format('HH:mm:ss'), '11:23:45', '112345 with Hmmss');
+    assert.equal(moment('172345', 'Hmmss', true).format('HH:mm:ss'), '17:23:45', '112345 with Hmmss');
+});
+
+test('Y token', function (assert) {
+    assert.equal(moment('1-1-2010', 'M-D-Y', true).year(), 2010, 'parsing Y');
+});
+
+test('parsing flags retain parsed date parts', function (assert) {
+    var a = moment('10 p', 'hh:mm a');
+    assert.equal(a.parsingFlags().parsedDateParts[3], 10, 'parsed 10 as the hour');
+    assert.equal(a.parsingFlags().parsedDateParts[0], undefined, 'year was not parsed');
+    assert.equal(a.parsingFlags().meridiem, 'p', 'meridiem flag was added');
+    var b = moment('10:30', ['MMDDYY', 'HH:mm']);
+    assert.equal(b.parsingFlags().parsedDateParts[3], 10, 'multiple format parshing matched hour');
+    assert.equal(b.parsingFlags().parsedDateParts[0], undefined, 'array is properly copied, no residual data from first token parse');
+});
+
+test('parsing only meridiem results in invalid date', function (assert) {
+    assert.ok(!moment('alkj', 'hh:mm a').isValid(), 'because an a token is used, a meridiem will be parsed but nothing else was so invalid');
+    assert.ok(moment('02:30 p more extra stuff', 'hh:mm a').isValid(), 'because other tokens were parsed, date is valid');
+    assert.ok(moment('1/1/2016 extra data', ['a', 'M/D/YYYY']).isValid(), 'took second format, does not pick up on meridiem parsed from first format (good copy)');
 });

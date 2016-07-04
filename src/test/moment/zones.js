@@ -1,7 +1,11 @@
 import { module, test } from '../qunit';
 import moment from '../../moment';
 
-module('zones');
+module('zones', {
+    'setup': function () {
+        test.expectedDeprecations('moment().zone');
+    }
+});
 
 test('set zone', function (assert) {
     var zone = moment();
@@ -49,6 +53,9 @@ test('set zone with string', function (assert) {
 
     zone.zone('2013-03-07T07:00:00+0100');
     assert.equal(zone.zone(), -60, 'set the zone with a string that uses the +0000 syntax');
+
+    zone.zone('2013-03-07T07:00:00+02');
+    assert.equal(zone.zone(), -120, 'set the zone with a string that uses the +00 syntax');
 
     zone.zone('03-07-2013T07:00:00-08:00');
     assert.equal(zone.zone(), 480, 'set the zone with a string with a non-ISO 8601 date');
@@ -357,6 +364,7 @@ test('isDST', function (assert) {
 });
 
 test('zone names', function (assert) {
+    test.expectedDeprecations();
     assert.equal(moment().zoneAbbr(),   '', 'Local zone abbr should be empty');
     assert.equal(moment().format('z'),  '', 'Local zone formatted abbr should be empty');
     assert.equal(moment().zoneName(),   '', 'Local zone name should be empty');
@@ -419,6 +427,7 @@ test('parse zone static', function (assert) {
 });
 
 test('parse zone with more arguments', function (assert) {
+    test.expectedDeprecations();
     var m;
     m = moment.parseZone('2013 01 01 05 -13:00', 'YYYY MM DD HH ZZ');
     assert.equal(m.format(), '2013-01-01T05:00:00-13:00', 'accept input and format');
